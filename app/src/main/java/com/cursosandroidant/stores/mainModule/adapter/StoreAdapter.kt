@@ -1,4 +1,4 @@
-package com.cursosandroidant.stores
+package com.cursosandroidant.stores.mainModule.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.cursosandroidant.stores.R
+import com.cursosandroidant.stores.common.entities.StoreEntity
 import com.cursosandroidant.stores.databinding.ItemStoreBinding
 
 class StoreAdapter(private var stores: MutableList<StoreEntity>, private var listener: OnClickListener) :
@@ -41,8 +43,8 @@ class StoreAdapter(private var stores: MutableList<StoreEntity>, private var lis
 
     override fun getItemCount(): Int = stores.size
 
-    fun setStores(stores: MutableList<StoreEntity>) {
-        this.stores = stores
+    fun setStores(stores: List<StoreEntity>) {
+        this.stores = stores as MutableList<StoreEntity>
         notifyDataSetChanged()
     }
 

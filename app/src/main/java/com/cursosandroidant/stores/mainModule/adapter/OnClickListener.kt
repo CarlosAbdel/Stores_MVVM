@@ -1,4 +1,6 @@
-package com.cursosandroidant.stores
+package com.cursosandroidant.stores.mainModule.adapter
+
+import com.cursosandroidant.stores.common.entities.StoreEntity
 
 interface OnClickListener {
     fun onClick(storeId: Long)

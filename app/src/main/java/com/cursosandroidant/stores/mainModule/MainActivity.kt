@@ -1,12 +1,21 @@
-package com.cursosandroidant.stores
+package com.cursosandroidant.stores.mainModule
 
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.cursosandroidant.stores.editModule.EditStoreFragment
+import com.cursosandroidant.stores.common.utils.MainAux
+import com.cursosandroidant.stores.R
+import com.cursosandroidant.stores.StoreApplication
+import com.cursosandroidant.stores.common.entities.StoreEntity
 import com.cursosandroidant.stores.databinding.ActivityMainBinding
+import com.cursosandroidant.stores.mainModule.adapter.OnClickListener
+import com.cursosandroidant.stores.mainModule.adapter.StoreAdapter
+import com.cursosandroidant.stores.mainModule.viewModel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -17,6 +26,9 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     private lateinit var mAdapter: StoreAdapter
     private lateinit var mGridLayout: GridLayoutManager
 
+    //MVVM
+    private lateinit var mMainViewModel: MainViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -25,6 +37,14 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
         mBinding.fab.setOnClickListener { launchEditFragment() }
 
         setupRecyclerView()
+        setupViewModel()
+    }
+
+    private fun setupViewModel() {
+        mMainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        mMainViewModel.getStores().observe(this, {stores ->
+            mAdapter.setStores(stores)
+        })
     }
 
     private fun launchEditFragment(args: Bundle? = null) {
@@ -44,7 +64,7 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     private fun setupRecyclerView() {
         mAdapter = StoreAdapter(mutableListOf(), this)
         mGridLayout = GridLayoutManager(this, resources.getInteger(R.integer.main_columns))
-        getStores()
+        //getStores()
 
         mBinding.recyclerView.apply {
             setHasFixedSize(true)
@@ -53,19 +73,6 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
         }
     }
 
-    private fun getStores() {
-        val queue = LinkedBlockingQueue<MutableList<StoreEntity>>()
-        Thread{
-            val stores = StoreApplication.database.storeDao().getAllStores()
-            queue.add(stores)
-        }.start()
-
-        mAdapter.setStores(queue.take())
-    }
-
-    /*
-    * OnClickListener
-    * */
     override fun onClick(storeId: Long) {
         val args = Bundle()
         args.putLong(getString(R.string.arg_id), storeId)
@@ -74,13 +81,7 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     }
 
     override fun onFavoriteStore(storeEntity: StoreEntity) {
-        storeEntity.isFavorite = !storeEntity.isFavorite
-        val queue = LinkedBlockingQueue<StoreEntity>()
-        Thread{
-            StoreApplication.database.storeDao().updateStore(storeEntity)
-            queue.add(storeEntity)
-        }.start()
-        updateStore(queue.take())
+        mMainViewModel.updateStore(storeEntity)
     }
 
     override fun onDeleteStore(storeEntity: StoreEntity) {
@@ -103,14 +104,9 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     private fun confirmDelete(storeEntity: StoreEntity){
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.dialog_delete_title)
-            .setPositiveButton(R.string.dialog_delete_confirm) { _, _ ->
-                val queue = LinkedBlockingQueue<StoreEntity>()
-                Thread {
-                    StoreApplication.database.storeDao().deleteStore(storeEntity)
-                    queue.add(storeEntity)
-                }.start()
-                mAdapter.delete(queue.take())
-            }
+            .setPositiveButton(R.string.dialog_delete_confirm, { _, _ ->
+                mMainViewModel.deleteStore(storeEntity)
+            })
             .setNegativeButton(R.string.dialog_delete_cancel, null)
             .show()
     }

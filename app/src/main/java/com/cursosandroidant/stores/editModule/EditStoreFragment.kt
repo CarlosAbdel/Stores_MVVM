@@ -1,4 +1,4 @@
-package com.cursosandroidant.stores
+package com.cursosandroidant.stores.editModule
 
 import android.content.Context
 import android.os.Bundle
@@ -11,7 +11,11 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.cursosandroidant.stores.R
+import com.cursosandroidant.stores.StoreApplication
+import com.cursosandroidant.stores.common.entities.StoreEntity
 import com.cursosandroidant.stores.databinding.FragmentEditStoreBinding
+import com.cursosandroidant.stores.mainModule.MainActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
@@ -102,7 +106,7 @@ class EditStoreFragment : Fragment() {
                 MaterialAlertDialogBuilder(requireActivity())
                     .setTitle(R.string.dialog_exit_title)
                     .setMessage(R.string.dialog_exit_message)
-                    .setPositiveButton(R.string.dialog_exit_ok){_, _->
+                    .setPositiveButton(R.string.dialog_exit_ok){ _, _->
                         if (isEnabled) {
                             isEnabled = false
                             requireActivity().onBackPressedDispatcher.onBackPressed()

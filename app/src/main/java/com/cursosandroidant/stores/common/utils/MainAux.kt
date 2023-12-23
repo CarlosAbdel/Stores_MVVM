@@ -1,4 +1,6 @@
-package com.cursosandroidant.stores
+package com.cursosandroidant.stores.common.utils
+
+import com.cursosandroidant.stores.common.entities.StoreEntity
 
 interface MainAux {
     fun hideFab(isVisible: Boolean = false)

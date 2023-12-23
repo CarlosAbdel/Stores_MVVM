@@ -1,6 +1,7 @@
-package com.cursosandroidant.stores
+package com.cursosandroidant.stores.common.database
 
 import androidx.room.*
+import com.cursosandroidant.stores.common.entities.StoreEntity
 
 @Dao
 interface StoreDao {
