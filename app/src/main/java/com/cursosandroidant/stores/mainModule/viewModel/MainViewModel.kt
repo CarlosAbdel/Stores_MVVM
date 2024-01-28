@@ -3,17 +3,15 @@ package com.cursosandroidant.stores.mainModule.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cursosandroidant.stores.StoreApplication
 import com.cursosandroidant.stores.common.entities.StoreEntity
 import com.cursosandroidant.stores.mainModule.model.MainInteractor
-import java.util.concurrent.LinkedBlockingQueue
 
 class MainViewModel: ViewModel() {
     private var storeList: MutableList<StoreEntity> = mutableListOf()
     private var interactor: MainInteractor = MainInteractor()
 
     private val stores: MutableLiveData<List<StoreEntity>> by lazy {
-        MutableLiveData<List<StoreEntity>>()/*also {
+        MutableLiveData<List<StoreEntity>>()/*.also {
             loadStores()
         }*/
     }
@@ -32,23 +30,24 @@ class MainViewModel: ViewModel() {
     }
 
     fun deleteStore(storeEntity: StoreEntity){
-        interactor.deleteStore(storeEntity, {
+        interactor.deleteStore(storeEntity) {
             val index = storeList.indexOf(storeEntity)
             if (index != -1){
                 storeList.removeAt(index)
                 stores.value = storeList
             }
-        })
+        }
     }
 
     fun updateStore(storeEntity: StoreEntity){
         storeEntity.isFavorite = !storeEntity.isFavorite
-        interactor.updateStore(storeEntity, {
+        interactor.updateStore(storeEntity) {
             val index = storeList.indexOf(storeEntity)
-            if (index != -1){
+            if (index != -1) {
                 storeList.removeAt(index)
                 stores.value = storeList
             }
-        })
+        }
+        loadStores()
     }
 }

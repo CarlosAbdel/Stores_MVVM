@@ -1,6 +1,5 @@
 package com.cursosandroidant.stores.mainModule.model
 
-import android.content.res.Resources.Theme
 import com.cursosandroidant.stores.StoreApplication
 import com.cursosandroidant.stores.common.entities.StoreEntity
 import java.util.concurrent.LinkedBlockingQueue

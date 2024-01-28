@@ -25,7 +25,7 @@ class StoreAdapter(private var stores: MutableList<StoreEntity>, private var lis
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val store = stores.get(position)
+        val store = stores[position]
 
         with(holder){
             setListener(store)
@@ -49,34 +49,31 @@ class StoreAdapter(private var stores: MutableList<StoreEntity>, private var lis
     }
 
     fun add(storeEntity: StoreEntity) {
-        if (!stores.contains(storeEntity)) {
-            stores.add(storeEntity)
-            notifyItemInserted(stores.size-1)
+        if (storeEntity.id != 0L) {
+            if (!stores.contains(storeEntity)) {
+                stores.add(storeEntity)
+                notifyItemInserted(stores.size-1)
+            } else{
+                update(storeEntity)
+            }
         }
     }
 
-    fun update(storeEntity: StoreEntity) {
+    private fun update(storeEntity: StoreEntity) {
         val index = stores.indexOf(storeEntity)
         if (index != -1){
-            stores.set(index, storeEntity)
+            stores[index] = storeEntity
             notifyItemChanged(index)
         }
     }
 
-    fun delete(storeEntity: StoreEntity) {
-        val index = stores.indexOf(storeEntity)
-        if (index != -1){
-            stores.removeAt(index)
-            notifyItemRemoved(index)
-        }
-    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view){
         val binding = ItemStoreBinding.bind(view)
 
         fun setListener(storeEntity: StoreEntity){
             with(binding.root) {
-                setOnClickListener { listener.onClick(storeEntity.id) }
+                setOnClickListener { listener.onClick(storeEntity) }
                 setOnLongClickListener {
                     listener.onDeleteStore(storeEntity)
                     true

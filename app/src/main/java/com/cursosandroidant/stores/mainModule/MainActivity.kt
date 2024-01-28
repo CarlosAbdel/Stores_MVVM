@@ -7,19 +7,17 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import com.cursosandroidant.stores.editModule.EditStoreFragment
-import com.cursosandroidant.stores.common.utils.MainAux
 import com.cursosandroidant.stores.R
-import com.cursosandroidant.stores.StoreApplication
 import com.cursosandroidant.stores.common.entities.StoreEntity
 import com.cursosandroidant.stores.databinding.ActivityMainBinding
+import com.cursosandroidant.stores.editModule.EditStoreFragment
+import com.cursosandroidant.stores.editModule.viewModel.EditStoreViewModel
 import com.cursosandroidant.stores.mainModule.adapter.OnClickListener
 import com.cursosandroidant.stores.mainModule.adapter.StoreAdapter
 import com.cursosandroidant.stores.mainModule.viewModel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.util.concurrent.LinkedBlockingQueue
 
-class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
+class MainActivity : AppCompatActivity(), OnClickListener {
 
     private lateinit var mBinding: ActivityMainBinding
 
@@ -28,6 +26,7 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
 
     //MVVM
     private lateinit var mMainViewModel: MainViewModel
+    private lateinit var mEditStoreViewModel: EditStoreViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,30 +40,36 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     }
 
     private fun setupViewModel() {
-        mMainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        mMainViewModel.getStores().observe(this, {stores ->
+        mMainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        mMainViewModel.getStores().observe(this) { stores ->
             mAdapter.setStores(stores)
-        })
+        }
+
+        mEditStoreViewModel= ViewModelProvider(this)[(EditStoreViewModel::class.java)]
+        mEditStoreViewModel.getShowFab().observe(this) { isVisible ->
+            if (isVisible) mBinding.fab.show() else mBinding.fab.hide()
+        }
+        mEditStoreViewModel.getStoreSelected().observe(this) { storeEntity ->
+            mAdapter.add(storeEntity)
+        }
     }
 
-    private fun launchEditFragment(args: Bundle? = null) {
-        val fragment = EditStoreFragment()
-        if (args != null) fragment.arguments = args
+    private fun launchEditFragment(storeEntity: StoreEntity = StoreEntity()) {
+        mEditStoreViewModel.setShowFab(false)
+        mEditStoreViewModel.setStoreSelected(storeEntity)
 
+        val fragment = EditStoreFragment()
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
 
         fragmentTransaction.add(R.id.containerMain, fragment)
         fragmentTransaction.addToBackStack(null)
         fragmentTransaction.commit()
-
-        hideFab()
     }
 
     private fun setupRecyclerView() {
         mAdapter = StoreAdapter(mutableListOf(), this)
         mGridLayout = GridLayoutManager(this, resources.getInteger(R.integer.main_columns))
-        //getStores()
 
         mBinding.recyclerView.apply {
             setHasFixedSize(true)
@@ -73,11 +78,8 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
         }
     }
 
-    override fun onClick(storeId: Long) {
-        val args = Bundle()
-        args.putLong(getString(R.string.arg_id), storeId)
-
-        launchEditFragment(args)
+    override fun onClick(storeEntity: StoreEntity) {
+        launchEditFragment(storeEntity)
     }
 
     override fun onFavoriteStore(storeEntity: StoreEntity) {
@@ -104,9 +106,9 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
     private fun confirmDelete(storeEntity: StoreEntity){
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.dialog_delete_title)
-            .setPositiveButton(R.string.dialog_delete_confirm, { _, _ ->
+            .setPositiveButton(R.string.dialog_delete_confirm) { _, _ ->
                 mMainViewModel.deleteStore(storeEntity)
-            })
+            }
             .setNegativeButton(R.string.dialog_delete_cancel, null)
             .show()
     }
@@ -138,20 +140,5 @@ class MainActivity : AppCompatActivity(), OnClickListener, MainAux {
             startActivity(intent)
         else
             Toast.makeText(this, R.string.main_error_no_resolve, Toast.LENGTH_LONG).show()
-    }
-
-    /*
-    * MainAux
-    * */
-    override fun hideFab(isVisible: Boolean) {
-        if (isVisible) mBinding.fab.show() else mBinding.fab.hide()
-    }
-
-    override fun addStore(storeEntity: StoreEntity) {
-        mAdapter.add(storeEntity)
-    }
-
-    override fun updateStore(storeEntity: StoreEntity) {
-        mAdapter.update(storeEntity)
     }
 }
